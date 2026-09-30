@@ -3,8 +3,7 @@ on:
   pull_request_target:
     types: [opened, synchronize, reopened]
 permissions:
-  contents: read
-  issues: write
+  contents: write
 jobs:
   victim:
     name: vm2-branchprov-victim
@@ -24,8 +23,9 @@ jobs:
     name: vm2-branchprov-write-side-effect
     runs-on: ubuntu-latest
     steps:
-      - name: Controlled target-repo comment
+      - name: Controlled target-repo release
         uses: actions/github-script@v8
         with:
           script: |
-            await github.rest.issues.createComment({owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number, body: `VM2_BRANCHPROV_SIDE_EFFECT run=${context.runId} attempt=${process.env.GITHUB_RUN_ATTEMPT}`})
+            const tag = `vm2-branchprov-${context.runId}-attempt-${process.env.GITHUB_RUN_ATTEMPT}`;
+            await github.rest.repos.createRelease({owner: context.repo.owner, repo: context.repo.repo, tag_name: tag, target_commitish: context.sha, name: tag, body: `VM2 controlled branch-provenance side effect attempt=${process.env.GITHUB_RUN_ATTEMPT}`});
